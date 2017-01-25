@@ -5,16 +5,13 @@
 
 int MISO0 = 12;
 int CLK0 = 13;
-int CS0 = 16;
+int CS0 = 2;
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 MAX6675 t0(CLK0, CS0, MISO0);
 Adafruit_MCP23017 mcp;
 
 void setup() {
-  // LED
-  pinMode(2, OUTPUT);
-
   // I2C
   Wire.pins(4, 5);
 
@@ -27,12 +24,10 @@ void setup() {
 
   // MCP23017 GPIO expander
   mcp.begin();
-  mcp.pinMode(0, OUTPUT);
-  mcp.digitalWrite(0, HIGH);
-  digitalWrite(2, LOW);
+  mcp.pinMode(8, OUTPUT);
+  mcp.digitalWrite(8, HIGH);
   delay(100);
-  mcp.digitalWrite(0, LOW);
-  digitalWrite(2, HIGH);
+  mcp.digitalWrite(8, LOW);
 
   // Clear LCD
   lcd.setCursor(0, 0);
@@ -50,13 +45,11 @@ void loop() {
   // LED stuff
   lcd.setCursor(0, 1);
   lcd.print("LED: ON ");
-  mcp.digitalWrite(0, HIGH);
-  digitalWrite(2, LOW);
+  mcp.digitalWrite(8, HIGH);
   delay(2000);
   lcd.setCursor(0, 1);
   lcd.print("LED: OFF");
-  mcp.digitalWrite(0, LOW);
-  digitalWrite(2, HIGH);
+  mcp.digitalWrite(8, LOW);
   delay(2000);
 
 }
