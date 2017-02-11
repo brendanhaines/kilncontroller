@@ -7,7 +7,7 @@ int MISO0 = 12;
 int CLK0 = 13;
 int CS0 = 16;
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+LiquidCrystal_I2C lcd(0x3f, 20, 4);
 MAX6675 t0(CLK0, CS0, MISO0);
 Adafruit_MCP23017 mcp;
 
