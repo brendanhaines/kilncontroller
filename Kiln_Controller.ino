@@ -46,17 +46,50 @@ int offTemp = 80;
 
 ///// WEB SERVER /////
 void handleRoot() {
-  server.send(200, "text/html", ""
+  server.send(200, "text/html",
               "<h1>Kiln Controller V1</h1>"
-              "<a href=\"/page2\">Page 2</a>"
-              "");
+              "<a href=\"/temps\">Real Time Temperature Readout</a><br>"
+              "<a href=\"/settings\">Temperature Setpoints</a><br>"
+              "<a href=\"/config\">Configuration</a><br>"
+             );
 }
 
-void handlePage2() {
-  server.send(200, "text/html", ""
-              "<h1>Page 2</h1>"
+void handleTemps() {
+  server.send(200, "text/html",
+              "<h1>Temperature Readout</h1>"
               "<a href=\"/\">Home</a>"
-              "");
+             );
+}
+
+void handleSettings() {
+  server.send(200, "text/html",
+              "<h1>Settings</h1>"
+              "<a href=\"/\">Home</a>"
+             );
+}
+
+void handleConfig() {
+  server.send(200, "text/html",
+              "<h1>Configuration</h1>"
+              "<a href=\"/\">Home</a>"
+             );
+}
+
+void handleNotFound() {
+  String temp = "File Not Found\n\n";
+  temp += "URI: ";
+  temp += server.uri();
+  temp += "\nMethod: ";
+  temp += ( server.method() == HTTP_GET ) ? "GET" : "POST";
+  temp += "\nArguments: ";
+  temp += server.args();
+  temp += "\n";
+
+  for ( uint8_t i = 0; i < server.args(); i++ ) {
+    temp += " " + server.argName ( i ) + ": " + server.arg ( i ) + "\n";
+  }
+
+  server.send ( 404, "text/plain", temp );
 }
 
 ///// SETUP /////
@@ -100,14 +133,17 @@ void setup() {
   WiFi.softAP(ssid, password);
   IPAddress myIP = WiFi.softAPIP();
   server.on("/", handleRoot);
-  server.on("/page2", handlePage2);
+  server.on("/temps", handleTemps);
+  server.on("/settings", handleSettings);
+  server.on("/config", handleConfig);
+  server.on ("/test.svg", tempGraph);
+  server.onNotFound(handleNotFound);
   server.begin();
   lcd.clear();
   lcd.setCursor(0, 0); lcd.print("SSID: "); lcd.print(ssid);
   lcd.setCursor(0, 1); lcd.print("PSWD: "); lcd.print(password);
   lcd.setCursor(0, 2); lcd.print("IP  : "); lcd.print(myIP);
-
-  delay(1000);
+  delay(2000);
 
   // Clear LCD
   lcd.setCursor(0, 0);
@@ -138,8 +174,48 @@ void loop() {
   lcd.print(" F");
 
   // Heartbeat LED
-  digitalWrite(2, LOW);
-  delay(100);
-  digitalWrite(2, HIGH);
-  delay(900);
+  if (WiFi.softAPgetStationNum() == 0) {
+    digitalWrite(2, LOW);
+    delay(100);
+    digitalWrite(2, HIGH);
+    delay(900);
+  } else {
+    digitalWrite(2, LOW);
+    delay(50);
+    digitalWrite(2, HIGH);
+    delay(100);
+    digitalWrite(2, LOW);
+    delay(50);
+    digitalWrite(2, HIGH);
+    delay(800);
+  }
+}
+
+void drawGraph(int xvalues[], int yvalues[], int width, int height, int r, int g, int b) {
+  String out = "";
+  char temp[100];
+
+  sprintf(temp, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" width=\"%d\" height=\"%d\">\n", width, height);
+  out += temp;
+
+  sprintf(temp, "<rect width=\"%d\" height=\"%d\" fill=\"rgb(%d,%d,%d)\" stroke-width=\"1\" stroke=\"rgb(0, 0, 0)\" />\n", width, height, r, g, b);
+  out += temp;
+
+  out += "<g stroke=\"black\">\n";
+  int y = rand() % 130;
+  //  for (int i = 0; i < size(times); i ++) {
+  //    int y2 = rand() % 130;
+  //    sprintf(temp, "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke-width=\"1\" />\n", x, 140 - y, x + 10, 140 - y2);
+  //    out += temp;
+  //    y = y2;
+  //  }
+  out += "</g>\n</svg>\n";
+
+  server.send ( 200, "image/svg+xml", out);
+}
+
+void tempGraph() {
+  int times[] = {1, 2, 3, 4, 5, 6};
+  int temps[] = {1, 2, 3, 1, 5, 3};
+  drawGraph(times, temps, 400, 150, 232, 240, 255);
 }
