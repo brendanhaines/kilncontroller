@@ -5,7 +5,7 @@
 
 int MISO0 = 12;
 int CLK0 = 13;
-int CS0 = 2;
+int CS0 = 16;
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 MAX6675 t0(CLK0, CS0, MISO0);
@@ -41,15 +41,5 @@ void loop() {
   lcd.print("F ");
   lcd.print(t0.readCelsius());
   lcd.print("C");
-
-  // LED stuff
-  lcd.setCursor(0, 1);
-  lcd.print("LED: ON ");
-  mcp.digitalWrite(8, HIGH);
-  delay(2000);
-  lcd.setCursor(0, 1);
-  lcd.print("LED: OFF");
-  mcp.digitalWrite(8, LOW);
-  delay(2000);
-
+  delay(1000);
 }
